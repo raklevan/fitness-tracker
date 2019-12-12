@@ -15,18 +15,19 @@ app.use(express.json());
 
 app.use(express.static("public"));
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/populate", { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/populate", { useNewUrlParser: true ,useUnifiedTopology: true} );
 
 db.Exercise.create({ name: "My Exercises" })
-  .then(dbExercise => {
+  .then(dbExercises => {
     console.log(dbExercises);
   })
   .catch(({message}) => {
     console.log(message);
   });
 
-app.post("/submit", ({body}, res) => {
+app.post("/exercise", ({body}, res) => {
   db.Exercise.create(body)
+  .then(({_id}) => db.Exercise.findOneAndUpdate({}, { $push: {exercise : _id } }, { new: true }))
    .then(dbExercises => {
       res.json(dbExercises);
     })
